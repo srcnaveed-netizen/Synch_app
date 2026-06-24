@@ -157,6 +157,18 @@ app.get('/api/users/synch/:synchId', auth, async (req, res) => {
   }
 });
 
+app.get('/api/users/phone/:phone', auth, async (req, res) => {
+  try {
+    const phone = req.params.phone.replace(/[^0-9+]/g, '');
+    const user = await User.findByPhone(phone);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.id === req.user.id) return res.status(400).json({ error: 'Cannot add yourself' });
+    res.json({ user: User.toPublic(user) });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to find user' });
+  }
+});
+
 app.put('/api/users/profile', auth, async (req, res) => {
   try {
     const updated = await User.updateProfile(req.user.id, req.body);
